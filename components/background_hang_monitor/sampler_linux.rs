@@ -10,7 +10,7 @@ use std::{cmp, io, mem, process, ptr, thread};
 
 use nix::sys::signal::{SaFlags, SigAction, SigHandler, SigSet, Signal, sigaction};
 use unwind_sys::{
-    UNW_ESUCCESS, UNW_REG_IP, UNW_REG_SP, unw_cursor_t, unw_get_reg, unw_init_local, unw_step,
+    unw_cursor_t, unw_get_reg, unw_init_local, unw_step, unw_tdep_context_t, UNW_ESUCCESS, UNW_REG_IP, UNW_REG_SP
 };
 
 use crate::sampler::{NativeStack, Sampler};
@@ -27,7 +27,7 @@ static SHARED_STATE: UncheckedSyncUnsafeCell<SharedState> =
         msg4: None,
     }));
 
-static CONTEXT: AtomicPtr<libc::ucontext_t> = AtomicPtr::new(ptr::null_mut());
+static CONTEXT: AtomicPtr<unw_tdep_context_t> = AtomicPtr::new(ptr::null_mut());
 
 type MonitoredThreadId = libc::pid_t;
 
@@ -276,7 +276,7 @@ extern "C" fn sigprof_handler(
 ) {
     assert_eq!(sig, libc::SIGPROF);
     // copy the context.
-    CONTEXT.store(ctx as *mut libc::ucontext_t, Ordering::SeqCst);
+    CONTEXT.store(ctx as *mut unw_tdep_context_t, Ordering::SeqCst);
 
     // Safety: non-exclusive reference only
     // since the sampling thread is accessing this concurrently

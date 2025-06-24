@@ -30,5 +30,10 @@ mach2 = { version = "0.4", optional = true }
 nix = { workspace = true, features = ["signal"], optional = true }
 unwind-sys = { version = "0.1.4", optional = true }
 
+# This can probably be added to the above linux section (if removing the aarch64 constraint is an option)
+[target.'cfg(target_os = "android")'.dependencies]
+nix = { workspace = true, features = ["signal"], optional = true }
+unwind-sys = { version = "0.1.4", optional = true }
+
 [features]
 sampler = ["unwind-sys", "mach2", "nix"]
